@@ -39,13 +39,13 @@ namespace xadrez
             p.incrementarQteMovimento();
             Peca pecaCapturada = tab.retirarPeca(destino);
             tab.colocarPeca(p, destino);
-            if(pecaCapturada != null)
+            if (pecaCapturada != null)
             {
                 capturadas.Add(pecaCapturada);
             }
 
             // #Jogada especia: Roque pequeno
-            if(p is Rei && destino.coluna == origem.coluna + 2)
+            if (p is Rei && destino.coluna == origem.coluna + 2)
             {
                 Posicao origemT = new Posicao(origem.linha, origem.coluna + 3);
                 Posicao destinoT = new Posicao(origem.linha, origem.coluna + 1);
@@ -65,12 +65,12 @@ namespace xadrez
             }
 
             // #Jogada especial: En passant
-            if(p is Peao)
+            if (p is Peao)
             {
-                if(origem.coluna != destino.coluna && pecaCapturada == null)
+                if (origem.coluna != destino.coluna && pecaCapturada == null)
                 {
                     Posicao posP;
-                    if(p.cor == Cor.Branca)
+                    if (p.cor == Cor.Branca)
                     {
                         posP = new Posicao(destino.linha + 1, origem.coluna);
                     }
@@ -118,13 +118,13 @@ namespace xadrez
             }
 
             // #Jogada especial: En passant
-            if(p is Peao)
+            if (p is Peao)
             {
-                if(origem.coluna != destino.coluna && pecaCapturada == vulneravelEnPassant)
+                if (origem.coluna != destino.coluna && pecaCapturada == vulneravelEnPassant)
                 {
                     Peca peao = tab.retirarPeca(destino);
                     Posicao posP;
-                    if(p.cor == Cor.Branca)
+                    if (p.cor == Cor.Branca)
                     {
                         posP = new Posicao(3, destino.coluna);
                     }
@@ -146,6 +146,22 @@ namespace xadrez
                 throw new TabuleiroException("Você não pode se colocar em xeque!");
             }
 
+            Peca p = tab.peca(destino);
+
+            // #Jogada especial: promoção
+            if (p is Peao)
+            {
+                if (p.cor == Cor.Branca && destino.linha == 0 || (p.cor == Cor.Preta && destino.linha == 7))
+                {
+                    p = tab.retirarPeca(destino);
+                    pecas.Remove(p);
+                    Peca dama = new Dama(tab, p.cor);
+                    tab.colocarPeca(dama, destino);
+                    pecas.Add(dama);
+                }
+            }
+
+
             if (estaEmXeque(adversaria(jogadorAtual)))
             {
                 xeque = true;
@@ -164,10 +180,9 @@ namespace xadrez
                 mudaJogador();
             }
 
-            Peca p = tab.peca(destino);
 
             // #Jogada especial: En Passant
-            if(p is Peao && (destino.linha == origem.linha - 2 || destino.linha == origem.linha+ 2))
+            if (p is Peao && (destino.linha == origem.linha - 2 || destino.linha == origem.linha + 2))
             {
                 vulneravelEnPassant = p;
             }
@@ -175,8 +190,8 @@ namespace xadrez
             {
                 vulneravelEnPassant = null;
             }
-            
-            
+
+
         }
 
         public void validarPosicaoDeOrigem(Posicao pos)
@@ -196,7 +211,7 @@ namespace xadrez
 
         }
 
-     
+
         public void validarPosicaoDeDestino(Posicao origem, Posicao destino)
         {
             if (!tab.peca(origem).movimentoPossivel(destino))
@@ -208,7 +223,7 @@ namespace xadrez
 
         private void mudaJogador()
         {
-            if(jogadorAtual == Cor.Branca)
+            if (jogadorAtual == Cor.Branca)
             {
                 jogadorAtual = Cor.Preta;
             }
@@ -222,9 +237,9 @@ namespace xadrez
         {
             HashSet<Peca> aux = new HashSet<Peca>();
 
-            foreach(Peca x in capturadas)
+            foreach (Peca x in capturadas)
             {
-                if(x.cor == cor)
+                if (x.cor == cor)
                 {
                     aux.Add(x);
                 }
@@ -265,7 +280,7 @@ namespace xadrez
         {
             foreach (Peca x in pecasEmJogo(cor))
             {
-                if(x is Rei)
+                if (x is Rei)
                 {
                     return x;
                 }
@@ -276,11 +291,11 @@ namespace xadrez
         public bool estaEmXeque(Cor cor)
         {
             Peca R = rei(cor);
-            if(R == null)
+            if (R == null)
             {
                 throw new TabuleiroException("Não tem rei da cor" + cor + " no tabuleiro!");
             }
-            foreach(Peca x in pecasEmJogo(adversaria(cor)))
+            foreach (Peca x in pecasEmJogo(adversaria(cor)))
             {
                 bool[,] mat = x.movimentosPossiveis();
                 if (mat[R.posicao.linha, R.posicao.coluna])
@@ -298,18 +313,18 @@ namespace xadrez
                 return false;
             }
 
-            foreach(Peca x in pecasEmJogo(cor))
+            foreach (Peca x in pecasEmJogo(cor))
             {
                 bool[,] mat = x.movimentosPossiveis();
-                for(int i = 0; i < tab.linhas; i++)
+                for (int i = 0; i < tab.linhas; i++)
                 {
-                    for(int j = 0; j < tab.colunas; j++)
+                    for (int j = 0; j < tab.colunas; j++)
                     {
                         if (mat[i, j])
                         {
                             Posicao origem = x.posicao;
-                            Posicao destino = new Posicao(i,j);
-                            Peca pecaCapturada = executaMovimento(x.posicao,destino);
+                            Posicao destino = new Posicao(i, j);
+                            Peca pecaCapturada = executaMovimento(x.posicao, destino);
                             bool testeXeque = estaEmXeque(cor);
                             desfazMovimento(origem, destino, pecaCapturada);
                             if (!testeXeque)
